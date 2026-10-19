@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IoT Health Monitor | Centurion University</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- uPlot CSS for the live graph -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uPlot/1.6.24/uPlot.min.css">
     <style>
         :root {
             --bg-color: #0f172a;
@@ -227,15 +225,6 @@
             </div>
             <p class="value" id="accelZ" style="font-size: 28px;">--</p>
         </div>
-
-        <!-- Full-Width Live Heart Rate Trend Graph Card -->
-        <div class="card" style="grid-column: 1 / -1; text-align: left;">
-            <div class="card-header" style="margin-bottom: 10px;">
-                <h3>Live Heart Rate Trend Graph</h3>
-                <span class="unit" style="color: #f43f5e;">Real-Time Telemetry Stream</span>
-            </div>
-            <div id="main-hr-chart" style="width: 100%; height: 180px;"></div>
-        </div>
     </div>
 
     <div class="status-bar">
@@ -243,28 +232,8 @@
         <span id="status">Connecting to Blynk Cloud...</span>
     </div>
 
-    <!-- uPlot JavaScript Library for the graph -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/uPlot/1.6.24/uPlot.iife.min.js"></script>
     <script>
         const TOKEN = "S75XuM0prSXU6HCrAH3U6_f0gKB7s65v";
-        const MAX_HISTORY = 60;
-        let hrData = { time: [], value: [] };
-
-        // Initialize the interactive Heart Rate trend chart
-        const mainHrPlot = new uPlot({
-            width: document.getElementById('main-hr-chart').offsetWidth || 800,
-            height: 180,
-            series: [
-                {},
-                { stroke: '#f43f5e', width: 3, fill: 'rgba(244, 63, 94, 0.1)' }
-            ],
-            axes: [
-                { stroke: '#94a3b8', grid: { stroke: 'rgba(255,255,255,0.05)' } },
-                { stroke: '#94a3b8', grid: { stroke: 'rgba(255,255,255,0.05)' } }
-            ],
-            grid: { stroke: 'transparent' },
-            cursor: { show: true }
-        }, [[], []], document.getElementById('main-hr-chart'));
 
         async function fetchSensorData(pin, elementId, unit) {
             try {
@@ -278,18 +247,6 @@
                     elem.innerHTML = data + `<span class="unit"> &deg;C</span>`;
                 } else if (pin === 'v1') {
                     elem.innerHTML = data + `<span class="unit"> BPM</span>`;
-                    
-                    // Push data points into the live graph history using your exact data value
-                    let numVal = parseFloat(data) || 0;
-                    let now = Math.floor(Date.now() / 1000);
-                    hrData.time.push(now);
-                    hrData.value.push(numVal);
-                    if (hrData.time.length > MAX_HISTORY) {
-                        hrData.time.shift();
-                        hrData.value.shift();
-                    }
-                    mainHrPlot.setData([hrData.time, hrData.value]);
-
                 } else if (pin === 'v2') {
                     elem.innerHTML = `<span class="unit" style="font-size: 24px;">Steps: </span>` + data;
                 } else {
@@ -313,10 +270,6 @@
 
         updateAllData();
         setInterval(updateAllData, 2000);
-
-        window.addEventListener("resize", () => {
-            mainHrPlot.setSize({width: document.getElementById('main-hr-chart').offsetWidth, height: 180});
-        });
     </script>
 </body>
 </html>
