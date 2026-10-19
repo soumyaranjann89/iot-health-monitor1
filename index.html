@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IoT Health Monitor | Centurion University</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- uPlot CSS for the live graph -->
+    <!-- uPlot CSS for Graph -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uPlot/1.6.24/uPlot.min.css">
     <style>
         :root {
@@ -193,15 +193,6 @@
             <p class="value" id="hr">--<span class="unit"> BPM</span></p>
         </div>
 
-        <!-- SpO2 Card -->
-        <div class="card">
-            <div class="card-header">
-                <h3>SpO2 (Blood Oxygen)</h3>
-                <span class="icon">🩸</span>
-            </div>
-            <p class="value" id="spo2">--<span class="unit"> %</span></p>
-        </div>
-
         <!-- Step Count Card -->
         <div class="card">
             <div class="card-header">
@@ -262,7 +253,7 @@
 
         // Initialize the interactive Heart Rate trend chart
         const mainHrPlot = new uPlot({
-            width: document.getElementById('main-hr-chart').offsetWidth,
+            width: document.getElementById('main-hr-chart').offsetWidth || 800,
             height: 180,
             series: [
                 {},
@@ -280,9 +271,11 @@
             try {
                 let response = await fetch(`https://blynk.cloud/external/api/get?token=${TOKEN}&${pin}`);
                 if (!response.ok) throw new Error('Network error');
-                let data = await response.text();
-                data = data.replace(/["\[\]]/g, '').trim();
-                let numValue = parseFloat(data);
+                let rawText = await response.text();
+                
+                // Safely clean up quotes or arrays returned by Blynk API
+                let cleanData = rawText.replace(/["\[\]]/g, '').trim();
+                let numValue = parseFloat(cleanData);
                 if (isNaN(numValue)) numValue = 0;
                 
                 let elem = document.getElementById(elementId);
@@ -303,10 +296,8 @@
 
                 } else if (pin === 'v2') {
                     elem.innerHTML = `<span class="unit" style="font-size: 24px;">Steps: </span>` + numValue.toFixed(0);
-                } else if (pin === 'v6') {
-                    elem.innerHTML = numValue.toFixed(0) + `<span class="unit"> %</span>`;
                 } else {
-                    elem.innerText = data;
+                    elem.innerText = cleanData;
                 }
             } catch (error) {
                 console.error(`Error fetching ${pin}:`, error);
@@ -316,7 +307,6 @@
         function updateAllData() {
             fetchSensorData('v0', 'temp');
             fetchSensorData('v1', 'hr');
-            fetchSensorData('v6', 'spo2'); // SpO2 virtual pin (V6)
             fetchSensorData('v2', 'steps');
             fetchSensorData('v3', 'accelX');
             fetchSensorData('v4', 'accelY');
