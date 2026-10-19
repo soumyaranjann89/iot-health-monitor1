@@ -12,6 +12,7 @@
             --accent-green: #10b981;
             --accent-blue: #3b82f6;
             --accent-red: #ef4444;
+            --accent-cyan: #06b6d4;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
         }
@@ -142,6 +143,11 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
         }
 
+        /* SpO2 Special Styling */
+        .spo2-card .value {
+            color: #06b6d4;
+        }
+
         .status-bar {
             display: flex;
             align-items: center;
@@ -190,6 +196,15 @@
             <p class="value" id="hr">--<span class="unit"> BPM</span></p>
         </div>
 
+        <!-- SpO2 Card -->
+        <div class="card spo2-card">
+            <div class="card-header">
+                <h3>Blood Oxygen (SpO2)</h3>
+                <span class="icon">🩸</span>
+            </div>
+            <p class="value" id="spo2">--<span class="unit"> %</span></p>
+        </div>
+
         <!-- Step Count Card -->
         <div class="card">
             <div class="card-header">
@@ -235,7 +250,7 @@
     <script>
         const TOKEN = "S75XuM0prSXU6HCrAH3U6_f0gKB7s65v";
 
-        async function fetchSensorData(pin, elementId, unit) {
+        async function fetchSensorData(pin, elementId) {
             try {
                 let response = await fetch(`https://blynk.cloud/external/api/get?token=${TOKEN}&${pin}`);
                 if (!response.ok) throw new Error('Network error');
@@ -247,6 +262,8 @@
                     elem.innerHTML = data + `<span class="unit"> &deg;C</span>`;
                 } else if (pin === 'v1') {
                     elem.innerHTML = data + `<span class="unit"> BPM</span>`;
+                } else if (pin === 'v6') {
+                    elem.innerHTML = data + `<span class="unit"> %</span>`;
                 } else if (pin === 'v2') {
                     elem.innerHTML = `<span class="unit" style="font-size: 24px;">Steps: </span>` + data;
                 } else {
@@ -260,6 +277,7 @@
         function updateAllData() {
             fetchSensorData('v0', 'temp');
             fetchSensorData('v1', 'hr');
+            fetchSensorData('v6', 'spo2');
             fetchSensorData('v2', 'steps');
             fetchSensorData('v3', 'accelX');
             fetchSensorData('v4', 'accelY');
